@@ -25,7 +25,7 @@ struct AllergenSelectionView: View {
                     }
                 }
             }
-            .navigationTitle("Allergene auswählen")
+            .navigationTitle("Allergene")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Fertig") {

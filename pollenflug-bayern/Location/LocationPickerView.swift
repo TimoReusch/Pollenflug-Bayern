@@ -17,17 +17,16 @@ struct LocationPickerView: View {
                     await viewModel.loadLocations()
                 }
         } else {
-            HStack {
-                Picker("", selection: Binding(
+                Picker(selection: Binding(
                     get: { viewModel.selectedLocation },
                     set: { viewModel.selectedLocation = $0 }
                 )) {
                     ForEach(viewModel.locations, id: \.self) { location in
                         Text(location.name).tag(location as Location?)
                     }
+                } label: {
+                        Label("Messpunkt", systemImage: "map")
                 }
-                .pickerStyle(MenuPickerStyle())
-            }
         }
     }
 }
