@@ -8,15 +8,26 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject var locationVM = LocationViewModel()
+    @StateObject var allergenVM = AllergenViewModel()
+    @State private var showAllergenSheet = false
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            VStack {
+                LocationPickerView()
+                    .environmentObject(locationVM)
+                
+                Button("Allergene auswählen") {
+                    showAllergenSheet = true
+                }
+                .sheet(isPresented: $showAllergenSheet) {
+                    AllergenSelectionView()
+                        .environmentObject(allergenVM)
+                }
+
+                PollenGraphView(locationVM: locationVM, allergenVM: allergenVM)
+            }
         }
-        .padding()
-    }
 }
 
 #Preview {
