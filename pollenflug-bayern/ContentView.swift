@@ -13,21 +13,34 @@ struct ContentView: View {
     @State private var showAllergenSheet = false
 
     var body: some View {
-            VStack {
-                LocationPickerView()
-                    .environmentObject(locationVM)
-                
-                Button("Allergene auswählen") {
-                    showAllergenSheet = true
+        NavigationView {
+            List{
+                Section(header: Text("Einstellungen")) {
+                    HStack {
+                        Text("Standort")
+                        Spacer()
+                        LocationPickerView()
+                            .environmentObject(locationVM)
+                    }
+                    
+                    
+                    Button("Allergene auswählen") {
+                        showAllergenSheet = true
+                    }
+                    .sheet(isPresented: $showAllergenSheet) {
+                        AllergenSelectionView()
+                            .environmentObject(allergenVM)
+                    }
                 }
-                .sheet(isPresented: $showAllergenSheet) {
-                    AllergenSelectionView()
-                        .environmentObject(allergenVM)
+                Section(header: Text("Belastung für ausgewählte Allergene")){
+                    PollenGraphView(locationVM: locationVM, allergenVM: allergenVM)
                 }
-
-                PollenGraphView(locationVM: locationVM, allergenVM: allergenVM)
             }
+            
+            .navigationTitle(Text("Pollenflug Bayern"))
         }
+        .background(Color(.systemGroupedBackground))
+    }
 }
 
 #Preview {
