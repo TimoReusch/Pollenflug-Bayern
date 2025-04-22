@@ -19,8 +19,8 @@ struct PollenChartView: View {
                 ProgressView("Lade Pollenwerte...")
                     .padding()
             } else if graphVM.measurements.isEmpty {
-                Text("Keine Daten verfügbar")
-                    .padding()
+                Text("Keine Daten verfügbar. Neue Messwerte liegen etwa alle drei Stunden vor.")
+                    
             } else {
                 Chart {
                     ForEach(graphVM.measurements, id: \.polle) { m in
