@@ -12,9 +12,10 @@ struct ContentView: View {
     @StateObject var allergenVM = AllergenViewModel()
     @StateObject var graphVM = PollenGraphViewModel()
     @State private var showAllergenSheet = false
+    @State private var showMoreSheet = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List{
                 Section(header: Text("Live Messwerte")){
                     PollenDatePickerView(graphVM: graphVM)
@@ -39,6 +40,19 @@ struct ContentView: View {
                 }
             }
             .navigationTitle(Text("Pollenflug Bayern"))
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showMoreSheet = true
+                    }) {
+                        Image(systemName: "ellipsis.circle")
+                            .imageScale(.large)
+                    }
+                }
+            }
+            .sheet(isPresented: $showMoreSheet) {
+                MoreView()
+            }
         }
         .background(Color(.systemGroupedBackground))
         .task {
