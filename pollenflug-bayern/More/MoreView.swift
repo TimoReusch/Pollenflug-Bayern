@@ -18,6 +18,9 @@ struct MoreView: View {
                 NavigationLink("Datenquelle"){
                     DatasourceView()
                 }
+                Link(destination: URL(string: "https://github.com/TimoReusch/Pollenflug-Bayern")!) {
+                    Label("GitHub", systemImage: "safari")
+                }
                 Link(destination: URL(string: "https://timo-reusch.de/imprint")!) {
                     Label("Impressum", systemImage: "safari")
                 }
