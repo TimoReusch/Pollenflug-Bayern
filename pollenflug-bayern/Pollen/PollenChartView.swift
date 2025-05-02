@@ -16,11 +16,14 @@ struct PollenChartView: View {
     var body: some View {
         Group {
             if graphVM.isLoading {
-                ProgressView("Lade Pollenwerte...")
-                    .padding()
+                ZStack {
+                    Color.clear // optional, just to fill the space
+                    ProgressView("Lade Pollenwerte...")
+                        .padding()
+                }
+                .frame(maxHeight: .infinity)
             } else if graphVM.measurements.isEmpty {
                 Text("Keine Daten verfügbar. Neue Messwerte liegen etwa alle drei Stunden vor.")
-                    
             } else {
                 Chart {
                     ForEach(graphVM.measurements, id: \.polle) { m in
