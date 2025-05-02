@@ -99,11 +99,11 @@
 				};
 			};
 			buildConfigurationList = 4B5BC9EF2DB8322E009FB87F /* Build configuration list for PBXProject "pollenflug-bayern" */;
-			developmentRegion = en;
+			developmentRegion = de;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
 				Base,
+				de,
 			);
 			mainGroup = 4B5BC9EB2DB8322E009FB87F;
 			minimizedProjectReferenceProxies = 1;
