@@ -6,7 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4B31C7772E82211D002C346F /* pollenflug.icon in Resources */ = {isa = PBXBuildFile; fileRef = 4B31C7762E82211D002C346F /* pollenflug.icon */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		4B31C7762E82211D002C346F /* pollenflug.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = pollenflug.icon; sourceTree = "<group>"; };
 		4B5BC9F42DB8322E009FB87F /* pollenflug-bayern.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "pollenflug-bayern.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -45,6 +50,7 @@
 		4B5BC9EB2DB8322E009FB87F = {
 			isa = PBXGroup;
 			children = (
+				4B31C7762E82211D002C346F /* pollenflug.icon */,
 				4B5BC9F62DB8322E009FB87F /* pollenflug-bayern */,
 				4B5BC9F52DB8322E009FB87F /* Products */,
 			);
@@ -122,6 +128,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B31C7772E82211D002C346F /* pollenflug.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -262,7 +269,7 @@
 		4B5BCA002DB8322F009FB87F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = pollenflug;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
@@ -282,7 +289,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.timo-reusch.pollenflug-bayern";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -294,7 +301,7 @@
 		4B5BCA012DB8322F009FB87F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = pollenflug;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
@@ -314,7 +321,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.timo-reusch.pollenflug-bayern";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
