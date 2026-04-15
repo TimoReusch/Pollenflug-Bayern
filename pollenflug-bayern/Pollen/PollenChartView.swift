@@ -23,43 +23,11 @@ struct PollenChartView: View {
                 }
                 .frame(maxHeight: .infinity)
             } else if graphVM.measurements.isEmpty {
-                Text("Keine Daten verfügbar. Neue Messwerte liegen etwa alle drei Stunden vor.")
+                Text("Für heute liegen noch keine Daten vor.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             } else {
                 VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Text(selectedHeaderText)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-
-                        Spacer()
-
-                        if selectedDate != nil {
-                            Text("Loslassen für aktuelle Werte")
-                                .font(.caption2)
-                                .foregroundStyle(.tertiary)
-                        }
-                    }
-
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 8) {
-                        ForEach(displayedTiles, id: \.name) { tile in
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(tile.name)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-
-                                Text("\(Int(tile.value)) Pollen/m³")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                    .lineLimit(1)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(8)
-                            .background(Color(.secondarySystemGroupedBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                        }
-                    }
-
                     Chart {
                         ForEach(graphVM.measurements, id: \.polle) { measurement in
                             ForEach(measurement.data, id: \.from) { point in
@@ -147,44 +115,43 @@ struct PollenChartView: View {
                         }
                     }
                     .frame(minHeight: 300)
+
+                    if let currentSelectedDate = selectedDate, !sortedSelectedValues.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("\(currentSelectedDate.formatted(.dateTime.hour().minute())) Uhr")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fontWeight(.semibold)
+                            
+
+                            ForEach(Array(sortedSelectedValues), id: \.name) { entry in
+                                HStack {
+                                    Text(entry.name)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+
+                                    Spacer()
+
+                                    Text("\(Int(entry.value)) Pollen/m³")
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                }
+                            }
+                        }
+                        .padding(10)
+                        .background(Color(.secondarySystemGroupedBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
                 }
                 .padding()
             }
         }
     }
 
-    private var latestValues: [String: Double] {
-        var values: [String: Double] = [:]
-
-        for measurement in graphVM.measurements {
-            if let latest = measurement.data.max(by: { $0.from < $1.from }) {
-                values[measurement.polle] = latest.value
-            }
-        }
-
-        return values
-    }
-
-    private var currentDisplayValues: [String: Double] {
-        if selectedDate != nil, !selectedValues.isEmpty {
-            return selectedValues
-        }
-
-        return latestValues
-    }
-
-    private var displayedTiles: [(name: String, value: Double)] {
-        currentDisplayValues
+    private var sortedSelectedValues: [(name: String, value: Double)] {
+        selectedValues
             .map { (name: Allergen.germanName(for: $0.key), value: $0.value) }
             .sorted { $0.name < $1.name }
-    }
-
-    private var selectedHeaderText: String {
-        if let selectedDate {
-            return "Werte um \(selectedDate.formatted(.dateTime.hour().minute())) Uhr"
-        }
-
-        return "Aktuellste Messwerte"
     }
 
     private var maxMeasurementValue: Double {

@@ -12,13 +12,17 @@ import SwiftUI
 class PollenGraphViewModel: ObservableObject {
     @Published var selectedDate: Date = Date()
     @Published var measurements: [MeasurementData] = []
+    @Published var liveMeasurements: [MeasurementData] = []
     @Published var isLoading = false
 
     func load(
         locationId: String,
         allergens: [String]
     ) async {
-        guard !allergens.isEmpty else { return }
+        guard !allergens.isEmpty else {
+            measurements = []
+            return
+        }
 
         isLoading = true
         defer { isLoading = false }
@@ -32,6 +36,27 @@ class PollenGraphViewModel: ObservableObject {
             measurements = result
         } catch {
             print("Fehler beim Laden der Messwerte: \(error)")
+        }
+    }
+
+    func loadLive(
+        locationId: String,
+        allergens: [String]
+    ) async {
+        guard !allergens.isEmpty else {
+            liveMeasurements = []
+            return
+        }
+
+        do {
+            let result = try await PollenDataService.shared.fetchMeasurements(
+                for: locationId,
+                allergens: allergens,
+                date: Date()
+            )
+            liveMeasurements = result
+        } catch {
+            print("Fehler beim Laden der Live-Messwerte: \(error)")
         }
     }
 }
