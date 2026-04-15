@@ -12,12 +12,12 @@ struct PollenChartView: View {
     @ObservedObject var graphVM: PollenGraphViewModel
     @State private var selectedDate: Date?
     @State private var selectedValues: [String: Double] = [:] // polle -> value
-    
+
     var body: some View {
         Group {
             if graphVM.isLoading {
                 ZStack {
-                    Color.clear // optional, just to fill the space
+                    Color.clear
                     ProgressView("Lade Pollenwerte...")
                         .padding()
                 }
@@ -26,65 +26,97 @@ struct PollenChartView: View {
                 Text("Keine Daten verfügbar. Neue Messwerte liegen etwa alle drei Stunden vor.")
             } else {
                 Chart {
-                    ForEach(graphVM.measurements, id: \.polle) { m in
-                        ForEach(m.data, id: \.from) { point in
+                    ForEach(graphVM.measurements, id: \.polle) { measurement in
+                        ForEach(measurement.data, id: \.from) { point in
                             let date = Date(timeIntervalSince1970: point.from)
-                            
+
                             LineMark(
                                 x: .value("Zeit", date),
                                 y: .value("Wert", point.value)
                             )
-                            .foregroundStyle(by: .value("Polle", Allergen.germanName(for: m.polle)))
-                            
-                            // Tooltip nur, wenn polle & Zeit passen
-                            if let selDate = selectedDate,
-                               Calendar.current.isDate(selDate, equalTo: date, toGranularity: .minute),
-                               let val = selectedValues[m.polle] {
-                                PointMark(x: .value("Zeit", date), y: .value("Wert", val))
-                                    .annotation(position: .top, alignment: .center) {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("🌿 \(Allergen.germanName(for: m.polle))")
-                                            Text("⏱️ \(selDate.formatted(.dateTime.hour().minute()))")
-                                            Text("📈 \(Int(val)) Pollen/m³")
-                                        }
-                                        .font(.caption2)
-                                        .padding(6)
-                                        .background(Color(.systemBackground).opacity(0.9))
-                                        .cornerRadius(6)
-                                        .shadow(radius: 3)
-                                    }
+                            .interpolationMethod(.monotone)
+                            .lineStyle(StrokeStyle(lineWidth: 2))
+                            .foregroundStyle(by: .value("Polle", Allergen.germanName(for: measurement.polle)))
+
+                            if let currentSelectedDate = selectedDate,
+                               Calendar.current.isDate(currentSelectedDate, equalTo: date, toGranularity: .minute),
+                               let selectedValue = selectedValues[measurement.polle] {
+                                PointMark(
+                                    x: .value("Zeit", date),
+                                    y: .value("Wert", selectedValue)
+                                )
+                                .foregroundStyle(by: .value("Polle", Allergen.germanName(for: measurement.polle)))
                             }
                         }
                     }
-                    
-                    // RuleMark bei aktiver Auswahl
-                    if let selDate = selectedDate {
-                        RuleMark(x: .value("Zeit", selDate))
-                            .lineStyle(StrokeStyle(dash: [4]))
+
+                    if let currentSelectedDate = selectedDate {
+                        RuleMark(x: .value("Zeit", currentSelectedDate))
+                            .lineStyle(StrokeStyle(lineWidth: 1, dash: [4]))
                             .foregroundStyle(.gray)
+                            .annotation(position: .topTrailing, alignment: .leading) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(currentSelectedDate.formatted(.dateTime.hour().minute()))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+
+                                    ForEach(Array(sortedSelectedValues.prefix(5)), id: \.name) { entry in
+                                        Text("\(entry.name): \(Int(entry.value))")
+                                            .font(.caption2)
+                                    }
+                                }
+                                .padding(8)
+                                .background(Color(.systemBackground).opacity(0.95))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .shadow(radius: 2)
+                            }
                     }
                 }
+                .chartYScale(domain: 0...yAxisUpperBound)
+                .chartYAxis {
+                    AxisMarks(position: .leading, values: .stride(by: yAxisTickStep)) {
+                        AxisGridLine()
+                        AxisTick()
+                        AxisValueLabel()
+                    }
+                }
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: .hour, count: 3)) {
+                        AxisGridLine()
+                        AxisTick()
+                        AxisValueLabel(format: .dateTime.hour())
+                    }
+                }
+                .chartLegend(position: .bottom, alignment: .leading)
                 .chartOverlay { proxy in
-                    GeometryReader { geo in
+                    GeometryReader { geometryProxy in
                         Rectangle()
-                            .fill(Color.clear).contentShape(Rectangle())
+                            .fill(Color.clear)
+                            .contentShape(Rectangle())
                             .gesture(
                                 DragGesture(minimumDistance: 0)
                                     .onChanged { value in
-                                        let location = value.location
-                                        if let date: Date = proxy.value(atX: location.x) {
-                                            // Nahegelegenes timestamp finden
-                                            let allTimestamps = graphVM.measurements.flatMap { $0.data.map(\.from) }
-                                            if let nearest = allTimestamps.min(by: { abs($0 - date.timeIntervalSince1970) < abs($1 - date.timeIntervalSince1970) }) {
-                                                let nearestDate = Date(timeIntervalSince1970: nearest)
-                                                selectedDate = nearestDate
-                                                selectedValues = [:]
-                                                
-                                                for m in graphVM.measurements {
-                                                    if let match = m.data.first(where: { $0.from == nearest }) {
-                                                        selectedValues[m.polle] = match.value
-                                                    }
-                                                }
+                                        guard let plotFrame = proxy.plotFrame else { return }
+                                        let plotAreaFrame = geometryProxy[plotFrame]
+                                        guard plotAreaFrame.contains(value.location) else { return }
+
+                                        let relativeX = value.location.x - plotAreaFrame.origin.x
+                                        guard let date: Date = proxy.value(atX: relativeX) else { return }
+
+                                        let allTimestamps = graphVM.measurements.flatMap { measurement in
+                                            measurement.data.map(\.from)
+                                        }
+
+                                        guard let nearestTimestamp = allTimestamps.min(by: {
+                                            abs($0 - date.timeIntervalSince1970) < abs($1 - date.timeIntervalSince1970)
+                                        }) else { return }
+
+                                        selectedDate = Date(timeIntervalSince1970: nearestTimestamp)
+                                        selectedValues = [:]
+
+                                        for measurement in graphVM.measurements {
+                                            if let match = measurement.data.first(where: { $0.from == nearestTimestamp }) {
+                                                selectedValues[measurement.polle] = match.value
                                             }
                                         }
                                     }
@@ -95,9 +127,49 @@ struct PollenChartView: View {
                             )
                     }
                 }
-                .frame(minHeight: 300)
+                .frame(minHeight: 320)
                 .padding()
             }
         }
+    }
+
+    private var maxMeasurementValue: Double {
+        let values = graphVM.measurements.flatMap { measurement in
+            measurement.data.map(\.value)
+        }
+        return values.max() ?? 0
+    }
+
+    // Stabilere Achse: feste Untergrenze 0, obere Grenze nur in gut lesbaren Stufen.
+    private var yAxisUpperBound: Double {
+        let steppedBounds: [Double] = [25, 50, 75, 100, 150, 200, 300, 400, 600, 800, 1_000]
+        let paddedMaximum = maxMeasurementValue * 1.1
+
+        if let bound = steppedBounds.first(where: { $0 >= paddedMaximum }) {
+            return bound
+        }
+
+        return (ceil(paddedMaximum / 200) * 200)
+    }
+
+    private var yAxisTickStep: Double {
+        switch yAxisUpperBound {
+        case ...100:
+            return 10
+        case ...200:
+            return 20
+        case ...400:
+            return 50
+        case ...800:
+            return 100
+        default:
+            return 200
+        }
+    }
+
+    private var sortedSelectedValues: [(name: String, value: Double)] {
+        selectedValues
+            .map { (name: Allergen.germanName(for: $0.key), value: $0.value) }
+            .sorted { $0.value > $1.value }
     }
 }
