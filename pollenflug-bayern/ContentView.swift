@@ -21,7 +21,7 @@ struct ContentView: View {
         NavigationStack {
             List {
                 if !hasSelectedAllergens {
-                    Section("Live Messwerte") {
+                    Section(liveSectionTitle) {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Bitte wähle mindestens ein Allergen aus, um Daten anzuzeigen.")
                                 .font(.subheadline)
@@ -38,7 +38,7 @@ struct ContentView: View {
                 }
 
                 if hasSelectedAllergens {
-                    Section("Live Messwerte") {
+                    Section(liveSectionTitle) {
                         if liveTiles.isEmpty {
                             Text("Für heute liegen noch keine Daten vor.")
                                 .font(.subheadline)
@@ -124,6 +124,14 @@ struct ContentView: View {
 
     private var currentDateTitle: String {
         Date().formatted(.dateTime.day().month(.wide).year())
+    }
+
+    private var liveSectionTitle: String {
+        if let locationName = locationVM.selectedLocation?.name {
+            return "Live Messwerte in \(locationName)"
+        }
+
+        return "Live Messwerte"
     }
 
     private var selectedAllergenNames: [String] {
