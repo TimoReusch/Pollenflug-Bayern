@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject var locationVM = LocationViewModel()
     @StateObject var allergenVM = AllergenViewModel()
     @StateObject var graphVM = PollenGraphViewModel()
@@ -69,6 +70,11 @@ struct ContentView: View {
         }
         .onChange(of: graphVM.selectedDate) {
             reloadIfPossible()
+        }
+        .onChange(of: scenePhase) {
+            if scenePhase == .active {
+                reloadIfPossible()
+            }
         }
     }
     
