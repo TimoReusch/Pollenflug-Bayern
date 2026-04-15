@@ -21,7 +21,7 @@ struct ContentView: View {
         NavigationStack {
             List {
                 if !hasSelectedAllergens {
-                    Section {
+                    Section("Live Messwerte") {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Bitte wähle mindestens ein Allergen aus, um Daten anzuzeigen.")
                                 .font(.subheadline)
@@ -38,7 +38,7 @@ struct ContentView: View {
                 }
 
                 if hasSelectedAllergens {
-                    Section {
+                    Section("Live Messwerte") {
                         if liveTiles.isEmpty {
                             Text("Für heute liegen noch keine Daten vor.")
                                 .font(.subheadline)
@@ -76,7 +76,7 @@ struct ContentView: View {
                     }
                 }
             }
-            .navigationTitle(Text(currentDateTitle))
+            .navigationTitle("Pollenflug")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
