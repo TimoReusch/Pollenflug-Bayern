@@ -18,7 +18,7 @@ struct PollenChartView: View {
             if graphVM.isLoading {
                 ZStack {
                     Color.clear
-                    ProgressView("Lade Pollenwerte...")
+                    ProgressView("Lade Pollenbelastungen...")
                         .padding()
                 }
                 .frame(maxHeight: .infinity)

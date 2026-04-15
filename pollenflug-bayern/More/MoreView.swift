@@ -8,27 +8,51 @@
 import SwiftUI
 
 struct MoreView: View {
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var locationVM: LocationViewModel
+    @EnvironmentObject private var allergenVM: AllergenViewModel
+
     var body: some View {
         NavigationStack {
-            List{
-                NavigationLink("Interpretation der Messwerte"){
-                    InterpretationView()
+            List {
+                Section(footer: Text("Wähle den Messpunkt, der am nächsten zu deinem aktuellen Standort gelegen ist.")) {
+                    NavigationLink {
+                        AllergenSelectionView()
+                            .environmentObject(allergenVM)
+                    } label: {
+                        Label("Allergene", systemImage: "leaf")
+                    }
+                    
+                    LocationPickerView()
+                        .environmentObject(locationVM)
                 }
-                NavigationLink("Datenquelle"){
-                    DatasourceView()
+
+                Section("Information") {
+                    NavigationLink("Interpretation der Messwerte") {
+                        InterpretationView()
+                    }
+                    NavigationLink("Datenquelle") {
+                        DatasourceView()
+                    }
                 }
-                Link(destination: URL(string: "https://github.com/TimoReusch/Pollenflug-Bayern")!) {
-                    Label("GitHub", systemImage: "safari")
+                
+                Section("Rechtliches") {
+                    
+                    Link(destination: URL(string: "https://avenia.cloud/imprint")!) {
+                        Label("Impressum", systemImage: "safari")
+                    }
+                    Link(destination: URL(string: "https://avenia.cloud/privacy")!) {
+                        Label("Datenschutzerklärung", systemImage: "safari")
+                    }
                 }
-                Link(destination: URL(string: "https://avenia.cloud/imprint")!) {
-                    Label("Impressum", systemImage: "safari")
-                }
-                Link(destination: URL(string: "https://avenia.cloud/privacy")!) {
-                    Label("Datenschutzerklärung", systemImage: "safari")
+                
+                Section("Pollenflug Bayern ist Open Source!"){
+                    Link(destination: URL(string: "https://github.com/TimoReusch/Pollenflug-Bayern")!) {
+                        Label("GitHub", systemImage: "safari")
+                    }
                 }
             }
-            .navigationTitle("Über diese App")
+            .navigationTitle("Einstellungen")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -44,9 +68,10 @@ struct MoreView: View {
     }
 }
 
-
 #Preview {
     NavigationStack {
         MoreView()
+            .environmentObject(LocationViewModel())
+            .environmentObject(AllergenViewModel())
     }
 }

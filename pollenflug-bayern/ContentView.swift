@@ -16,7 +16,6 @@ struct ContentView: View {
     @StateObject private var graphVM = PollenGraphViewModel()
 
     @State private var showMoreSheet = false
-    @State private var showSettingsSheet = false
 
     var body: some View {
         NavigationStack {
@@ -29,9 +28,9 @@ struct ContentView: View {
                                 .foregroundStyle(.secondary)
 
                             Button {
-                                showSettingsSheet = true
+                                showMoreSheet = true
                             } label: {
-                                Label("Allergene auswählen", systemImage: "leaf")
+                                Label("Messpunkt & Allergene", systemImage: "slider.horizontal.3")
                             }
                         }
                         .padding(.vertical, 4)
@@ -71,7 +70,7 @@ struct ContentView: View {
                         }
                     }
 
-                    Section(header: Text("Live Messwerte")) {
+                    Section(header: Text("Verlauf")) {
                         PollenChartView(graphVM: graphVM)
                         PollenDatePickerView(graphVM: graphVM)
                     }
@@ -79,30 +78,18 @@ struct ContentView: View {
             }
             .navigationTitle(Text(currentDateTitle))
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        showSettingsSheet = true
+                        showMoreSheet = true
                     } label: {
                         Image(systemName: "slider.horizontal.3")
                             .imageScale(.large)
                     }
                     .accessibilityLabel("Messpunkt und Allergene")
                 }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showMoreSheet = true
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                            .imageScale(.large)
-                    }
-                }
             }
             .sheet(isPresented: $showMoreSheet) {
                 MoreView()
-            }
-            .sheet(isPresented: $showSettingsSheet) {
-                SettingsSheetView()
                     .environmentObject(locationVM)
                     .environmentObject(allergenVM)
             }
@@ -181,45 +168,6 @@ struct ContentView: View {
             }
 
             await graphVM.loadLive(locationId: locationId, allergens: selectedAllergenNames)
-        }
-    }
-}
-
-private struct SettingsSheetView: View {
-    @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var locationVM: LocationViewModel
-    @EnvironmentObject private var allergenVM: AllergenViewModel
-
-    @State private var showAllergenSheet = false
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section("Messpunkt") {
-                    LocationPickerView()
-                        .environmentObject(locationVM)
-                }
-
-                Section("Allergene") {
-                    Button {
-                        showAllergenSheet = true
-                    } label: {
-                        Label("Allergene auswählen", systemImage: "leaf")
-                    }
-                }
-            }
-            .navigationTitle("Einstellungen")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Fertig") {
-                        dismiss()
-                    }
-                }
-            }
-            .sheet(isPresented: $showAllergenSheet) {
-                AllergenSelectionView()
-                    .environmentObject(allergenVM)
-            }
         }
     }
 }
