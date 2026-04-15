@@ -25,112 +25,166 @@ struct PollenChartView: View {
             } else if graphVM.measurements.isEmpty {
                 Text("Keine Daten verfügbar. Neue Messwerte liegen etwa alle drei Stunden vor.")
             } else {
-                Chart {
-                    ForEach(graphVM.measurements, id: \.polle) { measurement in
-                        ForEach(measurement.data, id: \.from) { point in
-                            let date = Date(timeIntervalSince1970: point.from)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text(selectedHeaderText)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
 
-                            LineMark(
-                                x: .value("Zeit", date),
-                                y: .value("Wert", point.value)
-                            )
-                            .interpolationMethod(.monotone)
-                            .lineStyle(StrokeStyle(lineWidth: 2))
-                            .foregroundStyle(by: .value("Polle", Allergen.germanName(for: measurement.polle)))
+                        Spacer()
 
-                            if let currentSelectedDate = selectedDate,
-                               Calendar.current.isDate(currentSelectedDate, equalTo: date, toGranularity: .minute),
-                               let selectedValue = selectedValues[measurement.polle] {
-                                PointMark(
-                                    x: .value("Zeit", date),
-                                    y: .value("Wert", selectedValue)
-                                )
-                                .foregroundStyle(by: .value("Polle", Allergen.germanName(for: measurement.polle)))
-                            }
+                        if selectedDate != nil {
+                            Text("Loslassen für aktuelle Werte")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
                         }
                     }
 
-                    if let currentSelectedDate = selectedDate {
-                        RuleMark(x: .value("Zeit", currentSelectedDate))
-                            .lineStyle(StrokeStyle(lineWidth: 1, dash: [4]))
-                            .foregroundStyle(.gray)
-                            .annotation(position: .topTrailing, alignment: .leading) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(currentSelectedDate.formatted(.dateTime.hour().minute()))
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 8) {
+                        ForEach(displayedTiles, id: \.name) { tile in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(tile.name)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
 
-                                    ForEach(Array(sortedSelectedValues.prefix(5)), id: \.name) { entry in
-                                        Text("\(entry.name): \(Int(entry.value))")
-                                            .font(.caption2)
-                                    }
-                                }
-                                .padding(8)
-                                .background(Color(.systemBackground).opacity(0.95))
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .shadow(radius: 2)
+                                Text("\(Int(tile.value)) Pollen/m³")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .lineLimit(1)
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(8)
+                            .background(Color(.secondarySystemGroupedBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
                     }
-                }
-                .chartYScale(domain: 0...yAxisUpperBound)
-                .chartYAxis {
-                    AxisMarks(position: .leading, values: .stride(by: yAxisTickStep)) {
-                        AxisGridLine()
-                        AxisTick()
-                        AxisValueLabel()
+
+                    Chart {
+                        ForEach(graphVM.measurements, id: \.polle) { measurement in
+                            ForEach(measurement.data, id: \.from) { point in
+                                let date = Date(timeIntervalSince1970: point.from)
+
+                                LineMark(
+                                    x: .value("Zeit", date),
+                                    y: .value("Wert", point.value)
+                                )
+                                .interpolationMethod(.monotone)
+                                .lineStyle(StrokeStyle(lineWidth: 2))
+                                .foregroundStyle(by: .value("Polle", Allergen.germanName(for: measurement.polle)))
+
+                                if let currentSelectedDate = selectedDate,
+                                   Calendar.current.isDate(currentSelectedDate, equalTo: date, toGranularity: .minute),
+                                   let selectedValue = selectedValues[measurement.polle] {
+                                    PointMark(
+                                        x: .value("Zeit", date),
+                                        y: .value("Wert", selectedValue)
+                                    )
+                                    .foregroundStyle(by: .value("Polle", Allergen.germanName(for: measurement.polle)))
+                                }
+                            }
+                        }
+
+                        if let currentSelectedDate = selectedDate {
+                            RuleMark(x: .value("Zeit", currentSelectedDate))
+                                .lineStyle(StrokeStyle(lineWidth: 1, dash: [4]))
+                                .foregroundStyle(.gray)
+                        }
                     }
-                }
-                .chartXAxis {
-                    AxisMarks(values: .stride(by: .hour, count: 3)) {
-                        AxisGridLine()
-                        AxisTick()
-                        AxisValueLabel(format: .dateTime.hour())
+                    .chartYScale(domain: 0...yAxisUpperBound)
+                    .chartYAxis {
+                        AxisMarks(position: .leading, values: .stride(by: yAxisTickStep)) {
+                            AxisGridLine()
+                            AxisTick()
+                            AxisValueLabel()
+                        }
                     }
-                }
-                .chartLegend(position: .bottom, alignment: .leading)
-                .chartOverlay { proxy in
-                    GeometryReader { geometryProxy in
-                        Rectangle()
-                            .fill(Color.clear)
-                            .contentShape(Rectangle())
-                            .gesture(
-                                DragGesture(minimumDistance: 0)
-                                    .onChanged { value in
-                                        guard let plotFrame = proxy.plotFrame else { return }
-                                        let plotAreaFrame = geometryProxy[plotFrame]
-                                        guard plotAreaFrame.contains(value.location) else { return }
+                    .chartXAxis {
+                        AxisMarks(values: .stride(by: .hour, count: 3)) {
+                            AxisGridLine()
+                            AxisTick()
+                            AxisValueLabel(format: .dateTime.hour())
+                        }
+                    }
+                    .chartLegend(position: .bottom, alignment: .leading)
+                    .chartOverlay { proxy in
+                        GeometryReader { geometryProxy in
+                            Rectangle()
+                                .fill(Color.clear)
+                                .contentShape(Rectangle())
+                                .gesture(
+                                    DragGesture(minimumDistance: 0)
+                                        .onChanged { value in
+                                            guard let plotFrame = proxy.plotFrame else { return }
+                                            let plotAreaFrame = geometryProxy[plotFrame]
+                                            guard plotAreaFrame.contains(value.location) else { return }
 
-                                        let relativeX = value.location.x - plotAreaFrame.origin.x
-                                        guard let date: Date = proxy.value(atX: relativeX) else { return }
+                                            let relativeX = value.location.x - plotAreaFrame.origin.x
+                                            guard let date: Date = proxy.value(atX: relativeX) else { return }
 
-                                        let allTimestamps = graphVM.measurements.flatMap { measurement in
-                                            measurement.data.map(\.from)
-                                        }
+                                            let allTimestamps = graphVM.measurements.flatMap { measurement in
+                                                measurement.data.map(\.from)
+                                            }
 
-                                        guard let nearestTimestamp = allTimestamps.min(by: {
-                                            abs($0 - date.timeIntervalSince1970) < abs($1 - date.timeIntervalSince1970)
-                                        }) else { return }
+                                            guard let nearestTimestamp = allTimestamps.min(by: {
+                                                abs($0 - date.timeIntervalSince1970) < abs($1 - date.timeIntervalSince1970)
+                                            }) else { return }
 
-                                        selectedDate = Date(timeIntervalSince1970: nearestTimestamp)
-                                        selectedValues = [:]
+                                            selectedDate = Date(timeIntervalSince1970: nearestTimestamp)
+                                            selectedValues = [:]
 
-                                        for measurement in graphVM.measurements {
-                                            if let match = measurement.data.first(where: { $0.from == nearestTimestamp }) {
-                                                selectedValues[measurement.polle] = match.value
+                                            for measurement in graphVM.measurements {
+                                                if let match = measurement.data.first(where: { $0.from == nearestTimestamp }) {
+                                                    selectedValues[measurement.polle] = match.value
+                                                }
                                             }
                                         }
-                                    }
-                                    .onEnded { _ in
-                                        selectedDate = nil
-                                        selectedValues = [:]
-                                    }
-                            )
+                                        .onEnded { _ in
+                                            selectedDate = nil
+                                            selectedValues = [:]
+                                        }
+                                )
+                        }
                     }
+                    .frame(minHeight: 300)
                 }
-                .frame(minHeight: 320)
                 .padding()
             }
         }
+    }
+
+    private var latestValues: [String: Double] {
+        var values: [String: Double] = [:]
+
+        for measurement in graphVM.measurements {
+            if let latest = measurement.data.max(by: { $0.from < $1.from }) {
+                values[measurement.polle] = latest.value
+            }
+        }
+
+        return values
+    }
+
+    private var currentDisplayValues: [String: Double] {
+        if selectedDate != nil, !selectedValues.isEmpty {
+            return selectedValues
+        }
+
+        return latestValues
+    }
+
+    private var displayedTiles: [(name: String, value: Double)] {
+        currentDisplayValues
+            .map { (name: Allergen.germanName(for: $0.key), value: $0.value) }
+            .sorted { $0.name < $1.name }
+    }
+
+    private var selectedHeaderText: String {
+        if let selectedDate {
+            return "Werte um \(selectedDate.formatted(.dateTime.hour().minute())) Uhr"
+        }
+
+        return "Aktuellste Messwerte"
     }
 
     private var maxMeasurementValue: Double {
@@ -165,11 +219,5 @@ struct PollenChartView: View {
         default:
             return 200
         }
-    }
-
-    private var sortedSelectedValues: [(name: String, value: Double)] {
-        selectedValues
-            .map { (name: Allergen.germanName(for: $0.key), value: $0.value) }
-            .sorted { $0.value > $1.value }
     }
 }
