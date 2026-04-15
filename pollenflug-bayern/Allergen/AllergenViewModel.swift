@@ -67,55 +67,12 @@ class AllergenViewModel: ObservableObject {
         ]
     }
     
-    let allergenNameMap: [String: String] = [
-        "Abies": "Tanne",
-        "Acer": "Ahorn",
-        "Aesculus": "Rosskastanie",
-        "Alnus": "Erle",
-        "Ambrosia": "Ambrosia",
-        "Artemisia": "Beifuß",
-        "Asteraceae": "Korbblütler",
-        "Betula": "Birke",
-        "Carpinus": "Hainbuche",
-        "Castanea": "Kastanie",
-        "Chenopodium": "Gänsefuß",
-        "Corylus": "Hasel",
-        "Cruciferae": "Kreuzblütler",
-        "Cyperaceae": "Sauergrasgewächse",
-        "Erica": "Heidekraut",
-        "Fagus": "Buche",
-        "Fraxinus": "Esche",
-        "Fungus": "Pilze",
-        "Galium": "Labkraut",
-        "Humulus": "Hopfen",
-        "Impatiens": "Springkraut",
-        "Juglans": "Walnuss",
-        "Larix": "Lärche",
-        "Picea": "Fichte",
-        "Pinaceae": "Kieferngewächse",
-        "Pinus": "Kiefer",
-        "Plantago": "Wegerich",
-        "Platanus": "Platane",
-        "Poaceae": "Gräser",
-        "Populus": "Pappel",
-        "Quercus": "Eiche",
-        "Quercus ilex": "Steineiche",
-        "Rumex": "Ampfer",
-        "Salix": "Weide",
-        "Sambucus": "Holunder",
-        "Secale": "Roggen",
-        "Taxus": "Eibe",
-        "Tilia": "Linde",
-        "Ulmus": "Ulme",
-        "Urtica": "Brennnessel",
-        "Varia": "Sonstiges"
-    ]
-
     func displayName(for allergen: Allergen) -> String {
-        if let readable = allergenNameMap[allergen.name] {
-            return "\(readable) (\(allergen.name))"
-        } else {
+        let germanName = Allergen.germanName(for: allergen.name)
+        if germanName == allergen.name {
             return allergen.name
         }
+
+        return "\(germanName) (\(allergen.name))"
     }
 }

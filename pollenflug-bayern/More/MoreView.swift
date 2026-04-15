@@ -21,10 +21,10 @@ struct MoreView: View {
                 Link(destination: URL(string: "https://github.com/TimoReusch/Pollenflug-Bayern")!) {
                     Label("GitHub", systemImage: "safari")
                 }
-                Link(destination: URL(string: "https://timo-reusch.de/imprint")!) {
+                Link(destination: URL(string: "https://avenia.cloud/imprint")!) {
                     Label("Impressum", systemImage: "safari")
                 }
-                Link(destination: URL(string: "https://timo-reusch.de/privacy")!) {
+                Link(destination: URL(string: "https://avenia.cloud/privacy")!) {
                     Label("Datenschutzerklärung", systemImage: "safari")
                 }
             }

@@ -34,7 +34,7 @@ struct PollenChartView: View {
                                 x: .value("Zeit", date),
                                 y: .value("Wert", point.value)
                             )
-                            .foregroundStyle(by: .value("Polle", m.polle))
+                            .foregroundStyle(by: .value("Polle", Allergen.germanName(for: m.polle)))
                             
                             // Tooltip nur, wenn polle & Zeit passen
                             if let selDate = selectedDate,
@@ -43,7 +43,7 @@ struct PollenChartView: View {
                                 PointMark(x: .value("Zeit", date), y: .value("Wert", val))
                                     .annotation(position: .top, alignment: .center) {
                                         VStack(alignment: .leading, spacing: 4) {
-                                            Text("🌿 \(m.polle)")
+                                            Text("🌿 \(Allergen.germanName(for: m.polle))")
                                             Text("⏱️ \(selDate.formatted(.dateTime.hour().minute()))")
                                             Text("📈 \(Int(val)) Pollen/m³")
                                         }
